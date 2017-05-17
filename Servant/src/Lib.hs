@@ -6,21 +6,24 @@ module Lib
     , app
     ) where
 
+import Data.Text
+import Data.String
 import Data.Aeson
 import Data.Aeson.TH
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant
+import Control.Monad.Trans.Except
+import Control.Monad.IO.Class (liftIO)
+import GitHub
+import GitHub.Data.Repos
+import qualified GitHub.Endpoints.Users as GitHubUsers
+import qualified GitHub.Endpoints.Repos as GitHubRepos
+import qualified GitHub.Endpoints.Users.Followers as GitHubFollowers
 
-data User = User
-  { userId        :: Int
-  , userFirstName :: String
-  , userLastName  :: String
-  } deriving (Eq, Show)
 
-$(deriveJSON defaultOptions ''User)
+type API = "crawl" :> Capture "user" String :> Get '[JSON] String
 
-type API = "users" :> Get '[JSON] [User]
 
 startApp :: IO ()
 startApp = run 8080 app
@@ -32,9 +35,22 @@ api :: Proxy API
 api = Proxy
 
 server :: Server API
-server = return users
+server = crawlGithub
 
-users :: [User]
-users = [ User 1 "Isaac" "Newton"
-        , User 2 "Albert" "Einstein"
-        ]
+
+crawlGithub :: String -> Handler String
+crawlGithub user = liftIO $ do
+  -- repos <- getRepos (fromString user)
+  userinfo <- getUserInfo (fromString user)
+  --addUser user
+  return userinfo
+
+
+getUserInfo :: Text -> IO User
+getUserInfo name = do
+    let user = GitHub.mkUserName name
+    request <- GitHubUsers.userInfoFor user
+    result <- case request of
+        Left e -> error $ show e
+        Right res -> return res
+    return result
