@@ -4,16 +4,33 @@ import Import.NoFoundation
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
+import System.Environment (getEnv)
 
 -- Used only when in "auth-dummy-login" setting is enabled.
-import Yesod.Auth.Dummy
+--import Yesod.Auth.Dummy
 
-import Yesod.Auth.OpenId    (authOpenId, IdentifierType (Claimed))
+--import Yesod.Auth.OpenId    (authOpenId, IdentifierType (Claimed))
+import Yesod.Auth.OAuth2.Github
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
+import System.Environment (getEnv)
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text as Text
+
+data OAuthKeys = OAuthKeys
+   { oauthKeysClientId :: Text
+    ,oauthKeysClientSecret :: Text
+   }
+
+loadOAuthKeys :: String -> IO OAuthKeys
+loadOAuthKeys prefix = OAuthKeys
+    <$> (getEnvT $ prefix <> "_CLIENT_ID")
+    <*> (getEnvT $ prefix <> "_CLIENT_SECRET")
+
+  where
+getEnvT = fmap Text.pack . getEnv
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -25,6 +42,7 @@ data App = App
     , appConnPool    :: ConnectionPool -- ^ Database connection pool.
     , appHttpManager :: Manager
     , appLogger      :: Logger
+    , appGithubKeys :: OAuthKeys
     }
 
 data MenuItem = MenuItem
