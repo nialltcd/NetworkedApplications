@@ -13,3 +13,14 @@ addUser user = do
                               (fromList [("name", T (fromString user))])
     putStrLn $ show result
     close pipe
+
+
+insertCompany :: String -> IO()
+insertCompany company = do
+    pipe <- connect config
+    result <- run pipe $ query $ pack $ "MERGE (a:" ++ (getOrgNode company) ++ ")"
+    close pipe
+
+
+getCompanyDb :: String -> String
+getCompanyDb name = "Org {name: '" ++ name ++ "'}"
