@@ -18,7 +18,7 @@ insertUser user = do
 insertCompany :: String -> IO()
 insertCompany company = do
     pipe <- connect config
-    result <- run pipe $ query $ pack $ "MERGE (a:" ++ (getOrgNode company) ++ ")"
+    result <- run pipe $ query $ pack $ "MERGE (a:" ++ (getCompanyDb company) ++ ")"
     close pipe
 
 
