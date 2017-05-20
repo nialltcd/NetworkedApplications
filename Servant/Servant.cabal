@@ -20,8 +20,10 @@ library
                      , aeson
                      , servant-server
                      , wai
+                     , vector
                      , github
                      , warp
+                     , bytestring
                      , transformers
                      , text
                      , containers
