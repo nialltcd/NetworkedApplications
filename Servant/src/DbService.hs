@@ -5,6 +5,7 @@ import Data.Map
 config :: BoltCfg
 config = def { user = "neo4j", password = "neo4j"}
 
+-- CREATE (n:Person { name: 'Andres', title: 'Developer' })
 addUser :: String -> IO()
 addUser user = do
     pipe <- connect config

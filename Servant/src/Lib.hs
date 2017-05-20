@@ -60,13 +60,3 @@ getUserInfo name = do
         Left e -> error $ show e
         Right res -> return res
     return result
-
--- CREATE (n:Person { name: 'Andres', title: 'Developer' })
-
-addUser :: String -> IO()
-addUser user = do
-    pipe <- connect config
-    result <- Database.Bolt.run pipe $ queryP "CREATE (n:User {name: {name}})" 
-                              (fromList [("name", T (fromString user))])
-    putStrLn $ show result
-    close pipe
