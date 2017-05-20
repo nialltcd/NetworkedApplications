@@ -28,8 +28,6 @@ import Data.Map
 config :: BoltCfg
 config = def { user = "neo4j", password = "neo4j"}
 
-type API = "crawl" :> Capture "user" String :> Get '[JSON] String
-
 type API = "crawlUser" :> Capture "user" String :> Get '[JSON] String
         :<|> "crawlCompany" :> Capture "company" String :> Get '[JSON] String
         :<|> "crawlRepository" :> Capture "repository" String :> Get '[JSON] String
@@ -64,7 +62,7 @@ crawlGithub :: String -> Handler String
 crawlGithub user = liftIO $ do
   -- repos <- getRepos (fromString user)
   userinfo <- getUserInfo (fromString user)
-  addUser user
+  --addUser user
   return user
 
 
