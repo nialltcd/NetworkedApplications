@@ -48,6 +48,17 @@ server = crawlGithubUser
     :<|> crawlGithubCompany
     :<|> crawlGithubRepository
 
+crawlGithubUser :: String -> Handler String
+crawlGithubUser user = liftIO $ do
+  return user
+
+crawlGithubCompany :: String -> Handler String
+crawlGithubCompany company = liftIO $ do
+  return company
+
+crawlGithubRepository :: String -> Handler String
+crawlGithubRepository repository = liftIO $ do
+  return repository
 
 crawlGithub :: String -> Handler String
 crawlGithub user = liftIO $ do
