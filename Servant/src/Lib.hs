@@ -34,7 +34,8 @@ import qualified Data.ByteString.Char8 as BS
 config :: BoltCfg
 config = def { user = "neo4j", password = "neo4j"}
 
-type API = "crawlUser" :> Capture "user" String :> Get '[JSON] String
+--API section
+type API = "crawlUser" :> Capture "user" String :> Capture "authentication" String :> Get '[JSON] String
         :<|> "crawlCompany" :> Capture "company" String :> Get '[JSON] String
         :<|> "crawlRepository" :> Capture "repository" String :> Get '[JSON] String
 
@@ -52,39 +53,25 @@ server = crawlGithubUser
     :<|> crawlGithubCompany
     :<|> crawlGithubRepository
 
-crawlGithubUser :: String -> Handler String
-crawlGithubUser user = liftIO $ do
+crawlGithubUser :: String -> String -> Handler String
+crawlGithubUser user authentication = liftIO $ do
+  result <- crawlUser (fromString user) authentication
   return user
 
 crawlGithubCompany :: String -> Handler String
 crawlGithubCompany company = liftIO $ do
+  --crawl company
   return company
 
 crawlGithubRepository :: String -> Handler String
 crawlGithubRepository repository = liftIO $ do
+  --crawl repository
   return repository
-
-crawlGithub :: String -> Handler String
-crawlGithub user = liftIO $ do
-  -- repos <- getRepos (fromString user)
-  userinfo <- getUserInfo (fromString user)
-  --addUser user
-  return user
-
-
-getUserInfo :: Text -> IO User
-getUserInfo name = do
-    let user = GitHub.mkUserName name
-    request <- GitHubUsers.userInfoFor user
-    result <- case request of
-        Left e -> error $ show e
-        Right res -> return res
-    return result
 
 
 crawlUser :: Text -> String -> IO (Vector (String, String))
-crawlUser user token = do
-    let auth = Just $ GitHub.Auth.OAuth $ BS.pack $ token
+crawlUser user authentication = do
+    let auth = Just $ GitHub.Auth.OAuth $ BS.pack $ authentication
     repos <- getUserRepos user auth
     --result <- Data.Vector.mapM addRepo repos
     --result_two <- Data.Vector.mapM (crawlRepo auth) repos
@@ -99,10 +86,18 @@ getUserRepos name auth = do
         Right res -> return res
     return $ Data.Vector.map formatRepo result
 
-
 formatRepo :: Repo -> (String, String)
 formatRepo repo = do
     let owner = GitHubRepos.repoOwner repo
     let owner_name = untagName $ simpleOwnerLogin owner
     let repo_name = untagName $ GitHubRepos.repoName repo
     (Data.Text.unpack owner_name, Data.Text.unpack repo_name)
+
+getUserInfo :: Text -> IO User
+getUserInfo name = do
+    let user = GitHub.mkUserName name
+    request <- GitHubUsers.userInfoFor user
+    result <- case request of
+        Left e -> error $ show e
+        Right res -> return res
+    return result
