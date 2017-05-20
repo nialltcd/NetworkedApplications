@@ -30,6 +30,9 @@ config = def { user = "neo4j", password = "neo4j"}
 
 type API = "crawl" :> Capture "user" String :> Get '[JSON] String
 
+type API = "crawlUser" :> Capture "user" String :> Get '[JSON] String
+        :<|> "crawlCompany" :> Capture "company" String :> Get '[JSON] String
+        :<|> "crawlRepository" :> Capture "repository" String :> Get '[JSON] String
 
 startApp :: IO ()
 startApp = Network.Wai.Handler.Warp.run 8080 app
@@ -41,7 +44,9 @@ api :: Proxy API
 api = Proxy
 
 server :: Server API
-server = crawlGithub
+server = crawlGithubUser 
+    :<|> crawlGithubCompany
+    :<|> crawlGithubRepository
 
 
 crawlGithub :: String -> Handler String
