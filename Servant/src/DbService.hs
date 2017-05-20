@@ -6,8 +6,8 @@ config :: BoltCfg
 config = def { user = "neo4j", password = "neo4j"}
 
 -- CREATE (n:Person { name: 'Andres', title: 'Developer' })
-addUser :: String -> IO()
-addUser user = do
+insertUser :: String -> IO()
+insertUser user = do
     pipe <- connect config
     result <- Database.Bolt.run pipe $ queryP "CREATE (n:User {name: {name}})" 
                               (fromList [("name", T (fromString user))])
