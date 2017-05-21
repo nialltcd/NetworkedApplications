@@ -26,17 +26,18 @@ import qualified GitHub.Endpoints.Users.Followers as GitHubFollowers
 import Database.Bolt
 import Data.Map
 import qualified Data.ByteString.Char8 as BS
+import DbService
 
-crawlUser :: Text -> String -> IO (Vector (String, String))
-crawlUser user authentication = do
+crawlGithubForUserData :: Text -> String -> IO (Vector (String, String))
+crawlGithubForUserData user authentication = do
     let auth = Just $ GitHub.Auth.OAuth $ BS.pack $ authentication
-    repos <- getUserRepos user auth
+    repos <- getRepos user auth
     --result <- Data.Vector.mapM addRepo repos
     --result_two <- Data.Vector.mapM (crawlRepo auth) repos
     return repos
 
-getUserRepos :: Text -> Maybe Auth -> IO (Vector (String, String))
-getUserRepos name auth = do
+getRepos :: Text -> Maybe Auth -> IO (Vector (String, String))
+getRepos name auth = do
     let owner = GitHub.mkOwnerName name
     request <- GitHubRepos.userRepos' auth owner RepoPublicityPublic
     result <- case request of

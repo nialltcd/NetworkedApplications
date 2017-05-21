@@ -31,10 +31,6 @@ import Data.Map
 import GithubService
 import qualified Data.ByteString.Char8 as BS
 
-
-config :: BoltCfg
-config = def { user = "neo4j", password = "neo4j"}
-
 --API section
 type API = "crawlUser" :> Capture "user" String :> Capture "authentication" String :> Get '[JSON] String
         :<|> "crawlCompany" :> Capture "company" String :> Get '[JSON] String
@@ -56,7 +52,7 @@ server = crawlGithubUser
 
 crawlGithubUser :: String -> String -> Handler String
 crawlGithubUser user authentication = liftIO $ do
-  result <- crawlUser (fromString user) authentication
+  result <- crawlGithubForUserData (fromString user) authentication
   return user
 
 crawlGithubCompany :: String -> Handler String
