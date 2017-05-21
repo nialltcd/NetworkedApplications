@@ -1,9 +1,19 @@
-
+{-# LANGUAGE DataKinds       #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators   #-}
+{-# LANGUAGE OverloadedStrings      #-}
 
 module GithubService where
 
 import Data.Text
 import Data.String
+import Data.Aeson
+import Data.Aeson.TH
+import Network.Wai
+import Network.Wai.Handler.Warp
+import Servant
+import Control.Monad.Trans.Except
+import Control.Monad.IO.Class (liftIO)
 import GitHub
 import GitHub.Auth
 import Data.Vector

@@ -1,3 +1,5 @@
+module DbService where
+
 import Database.Bolt
 import Data.Map
 
