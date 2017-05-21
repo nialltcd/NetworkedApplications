@@ -32,7 +32,7 @@ crawlGithubForUserData :: Text -> String -> IO (Vector (String, String))
 crawlGithubForUserData user authentication = do
     let auth = Just $ GitHub.Auth.OAuth $ BS.pack $ authentication
     repos <- getRepos user auth
-    result <- Data.Vector.mapM (addRepo "User") repos
+    result <- Data.Vector.mapM (insertRepo "User") repos
     --result_two <- Data.Vector.mapM (crawlRepo auth) repos
     return repos
 

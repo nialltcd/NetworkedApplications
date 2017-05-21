@@ -18,6 +18,7 @@ config = def { user = "neo4j", password = "neo4j"}
 -- CREATE (n:Person { name: 'Andres', title: 'Developer' })
 insertUser :: String -> IO()
 insertUser user = do
+    logMsg ["Adding User: ", user, "\n"]
     pipe <- connect config
     result <- Database.Bolt.run pipe $ queryP "CREATE (n:User {name: {name}})" 
                               (fromList [("name", T (fromString user))])
@@ -31,8 +32,8 @@ insertCompany company = do
     result <- run pipe $ query $ pack $ "MERGE (a:" ++ (getCompanyDb company) ++ ")"
     close pipe
 
-addRepo :: String -> (String, String) -> IO()
-addRepo node_type (owner_name, repo_name) = do
+insertRepo :: String -> (String, String) -> IO()
+insertRepo node_type (owner_name, repo_name) = do
     logMsg ["Adding Repo: ", owner_name, "/", repo_name, "\n"]
     pipe <- connect config
     result <- run pipe $ query $ pack $ "MERGE (a:" ++ (getRepoNode owner_name repo_name) ++ ")"
