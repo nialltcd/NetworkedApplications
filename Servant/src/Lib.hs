@@ -7,7 +7,7 @@ module Lib
     ( startApp
     , app
     ) where
-
+import DbService
 import Data.Text
 import Data.String
 import Data.Aeson
@@ -52,6 +52,7 @@ server = crawlGithubUser
 
 crawlGithubUser :: String -> String -> Handler String
 crawlGithubUser user authentication = liftIO $ do
+  insertUser user
   result <- crawlGithubForUserData (fromString user) authentication
   return user
 
