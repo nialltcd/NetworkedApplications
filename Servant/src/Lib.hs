@@ -28,6 +28,7 @@ import qualified GitHub.Endpoints.Repos as GitHubRepos
 import qualified GitHub.Endpoints.Users.Followers as GitHubFollowers
 import Database.Bolt
 import Data.Map
+import GithubService
 import qualified Data.ByteString.Char8 as BS
 
 
@@ -67,37 +68,3 @@ crawlGithubRepository :: String -> Handler String
 crawlGithubRepository repository = liftIO $ do
   --crawl repository
   return repository
-
-
-crawlUser :: Text -> String -> IO (Vector (String, String))
-crawlUser user authentication = do
-    let auth = Just $ GitHub.Auth.OAuth $ BS.pack $ authentication
-    repos <- getUserRepos user auth
-    --result <- Data.Vector.mapM addRepo repos
-    --result_two <- Data.Vector.mapM (crawlRepo auth) repos
-    return repos
-
-getUserRepos :: Text -> Maybe Auth -> IO (Vector (String, String))
-getUserRepos name auth = do
-    let owner = GitHub.mkOwnerName name
-    request <- GitHubRepos.userRepos' auth owner RepoPublicityPublic
-    result <- case request of
-        Left e -> error $ show e
-        Right res -> return res
-    return $ Data.Vector.map formatRepo result
-
-formatRepo :: Repo -> (String, String)
-formatRepo repo = do
-    let owner = GitHubRepos.repoOwner repo
-    let owner_name = untagName $ simpleOwnerLogin owner
-    let repo_name = untagName $ GitHubRepos.repoName repo
-    (Data.Text.unpack owner_name, Data.Text.unpack repo_name)
-
-getUserInfo :: Text -> IO User
-getUserInfo name = do
-    let user = GitHub.mkUserName name
-    request <- GitHubUsers.userInfoFor user
-    result <- case request of
-        Left e -> error $ show e
-        Right res -> return res
-    return result
