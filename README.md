@@ -1,6 +1,6 @@
 Coursework project for the CS7009 module lectured by Dr. Stephen Barrett
 
-This project utilizes:
+This project utilizes:  
 	- Haskell functional programming language  
 	- GitHub api  
 	- Node4j database  
