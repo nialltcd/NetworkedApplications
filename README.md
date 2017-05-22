@@ -9,4 +9,4 @@ This project utilizes:
 The project interacts with the GitHub api to crawl information regarding the repositories that a user owns.
 An authentication token is used during this process.
 
-An example of this crawled information being displayed can be seen in the Graphs folder.
+An example of this crawled information being displayed using d3 visualisation can be seen in the Graphs folder.
