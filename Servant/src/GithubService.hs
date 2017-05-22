@@ -18,9 +18,6 @@ import qualified GitHub.Endpoints.Users.Followers as GitHubFollowersS
 import DbService
 
 
-formatContributor :: Contributor -> String
-formatContributor (KnownContributor contributions avatarUrl name url uid gravatar) = unpack $ untagName name
-
 crawlGithubForUserData :: Text -> String -> IO (Vector (String, String))
 crawlGithubForUserData user authentication = do
     let auth = Just $ GitHub.Auth.OAuth $ BS.pack $ authentication
@@ -28,6 +25,7 @@ crawlGithubForUserData user authentication = do
     result <- Data.Vector.mapM (insertRepo "User") repos
     result_two <- Data.Vector.mapM (crawlGithubForRepoContributors auth) repos
     return repos
+
 
 crawlGithubForReposOfUser :: Text -> Maybe Auth -> IO (Vector (String, String))
 crawlGithubForReposOfUser name auth = do
@@ -38,6 +36,7 @@ crawlGithubForReposOfUser name auth = do
         Right res -> return res
     return $ Data.Vector.map formatRepo result
 
+
 crawlGithubForRepoContributors :: Maybe Auth -> (String, String) -> IO (Vector String)
 crawlGithubForRepoContributors auth (owner, repo) = do
     logMsg ["Crawling repo: ", owner, "/", repo, "\n"]
@@ -45,8 +44,9 @@ crawlGithubForRepoContributors auth (owner, repo) = do
     result <- Data.Vector.mapM (insertContributor (owner, repo)) contributors
     return contributors
 
-getRepoContributors :: (String, String) -> Maybe Auth -> IO (Vector String)
-getRepoContributors (owner, repo) auth = do
+
+crawlRepoContributorsByOwnerAndRepo :: (String, String) -> Maybe Auth -> IO (Vector String)
+crawlRepoContributorsByOwnerAndRepo (owner, repo) auth = do
     let github_owner = GitHub.mkOwnerName $ fromString owner
     let github_repo = GitHub.mkRepoName $ fromString repo
     request <- GitHubRepos.contributors' auth github_owner github_repo
@@ -55,6 +55,8 @@ getRepoContributors (owner, repo) auth = do
         Right res -> return res
     return $ Data.Vector.map formatContributor (Data.Vector.take 25 result)
 
+formatContributor :: Contributor -> String
+formatContributor (KnownContributor contributions avatarUrl name url uid gravatar) = unpack $ untagName name
 
 formatRepo :: Repo -> (String, String)
 formatRepo repo = do
