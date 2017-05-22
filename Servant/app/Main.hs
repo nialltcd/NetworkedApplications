@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import WebCrawlerService
 
 main :: IO ()
 main = startApp

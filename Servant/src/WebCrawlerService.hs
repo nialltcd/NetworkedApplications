@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeOperators   #-}
 {-# LANGUAGE OverloadedStrings      #-}
 
-module Lib
+module WebCrawlerService
     ( startApp
     , app
     ) where
