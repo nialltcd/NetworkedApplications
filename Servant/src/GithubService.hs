@@ -24,7 +24,7 @@ crawlGithubForUserData user authentication = do
     repos <- crawlGithubForReposOfUser user auth
     result <- Data.Vector.mapM (insertRepo "User") repos
     result_two <- Data.Vector.mapM (crawlGithubForRepoContributors auth) repos
-    result_three <- Data.Vector.mapM (crawlGitHubForRepoForks auth) repos
+    --result_three <- Data.Vector.mapM (crawlGitHubForRepoForks auth) repos
     return repos
 
 
@@ -38,6 +38,12 @@ crawlGithubForReposOfUser name auth = do
         Right res -> return res
     return $ Data.Vector.map formatRepo result
 
+formatRepo :: Repo -> (String, String)
+formatRepo repo = do
+    let owner = GitHubRepos.repoOwner repo
+    let owner_name = untagName $ simpleOwnerLogin owner
+    let repo_name = untagName $ GitHubRepos.repoName repo
+    (Data.Text.unpack owner_name, Data.Text.unpack repo_name)
 
 --Contributors
 crawlGithubForRepoContributors :: Maybe Auth -> (String, String) -> IO (Vector String)
@@ -61,14 +67,10 @@ crawlRepoContributorsByOwnerAndRepo (owner, repo) auth = do
 formatContributor :: Contributor -> String
 formatContributor (KnownContributor contributions avatarUrl name url uid gravatar) = unpack $ untagName name
 
-formatRepo :: Repo -> (String, String)
-formatRepo repo = do
-    let owner = GitHubRepos.repoOwner repo
-    let owner_name = untagName $ simpleOwnerLogin owner
-    let repo_name = untagName $ GitHubRepos.repoName repo
-    (Data.Text.unpack owner_name, Data.Text.unpack repo_name)
 
 --Watchers
+{-|
+
 crawlGithubForRepoWatchers :: Maybe Auth -> (String, String) -> IO (Vector String)
 crawlGithubForRepoWatchers auth (owner, repo) = do
     logMsg ["Crawling repo: ", owner, "/", repo, "\n"]
@@ -86,7 +88,7 @@ crawlRepoWatchers (owner, repo) auth = do
         Right res -> return res
     return $ Data.Vector.map formatWatcher (Data.Vector.take 25 result)
 
-formatWatcher :: GitHub.Owner -> String
-formatWatcher user = untagName $ user
+formatWatcher :: Watcher -> String
+formatWatcher user = unpack $ untagName user
 
-
+-}
