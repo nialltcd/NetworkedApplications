@@ -48,7 +48,6 @@ formatRepo repo = do
 --Contributors
 crawlGithubForRepoContributors :: Maybe Auth -> (String, String) -> IO (Vector String)
 crawlGithubForRepoContributors auth (owner, repo) = do
-    logMsg ["Crawling repo: ", owner, "/", repo, "\n"]
     contributors <- crawlRepoContributorsByOwnerAndRepo (owner, repo) auth
     result <- Data.Vector.mapM (insertContributor (owner, repo)) contributors
     return contributors

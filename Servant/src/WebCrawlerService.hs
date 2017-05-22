@@ -59,7 +59,7 @@ crawlGithubUser user authentication = liftIO $ do
 
 crawlGithubCompany :: String -> Handler String
 crawlGithubCompany company = liftIO $ do
-  --crawl company
+  --crawl companys
   return company
 
 crawlGithubRepository :: String -> Handler String

@@ -11,20 +11,16 @@ import GitHub.Data.Repos
 import GitHub.Data.Definitions
 import qualified GitHub.Endpoints.Repos as GitHubRepos hiding(query)
 
--- Neo4J Config
 config :: BoltCfg
 config = def { user = "neo4j", password = "neo4j"}
 
--- CREATE (n:Person { name: 'Andres', title: 'Developer' })
 insertUser :: String -> IO()
 insertUser user = do
-    logMsg ["Adding User: ", user, "\n"]
     pipe <- connect config
     result <- Database.Bolt.run pipe $ queryP "CREATE (n:User {name: {name}})" 
                               (fromList [("name", T (fromString user))])
     putStrLn $ show result
     close pipe
-
 
 insertCompany :: String -> IO()
 insertCompany company = do
@@ -34,7 +30,6 @@ insertCompany company = do
 
 insertRepo :: String -> (String, String) -> IO()
 insertRepo node_type (owner_name, repo_name) = do
-    logMsg ["Adding Repo: ", owner_name, "/", repo_name, "\n"]
     pipe <- connect config
     result <- run pipe $ query $ pack $ "MERGE (a:" ++ (getRepoNode owner_name repo_name) ++ ")"
     result <- run pipe $ query $ pack $ addLink (getNode node_type owner_name) (getRepoNode owner_name repo_name) "OWNER"
@@ -42,7 +37,6 @@ insertRepo node_type (owner_name, repo_name) = do
 
 insertContributor :: (String, String) -> String -> IO()
 insertContributor (owner_name, repo_name) contrib_name = do
-    logMsg ["Adding Contributor: ", contrib_name, "\n"]
     pipe <- connect config
     result <- run pipe $ query $ pack $ "MERGE (a:" ++ (getNode "User" contrib_name) ++ ")"
     result <- run pipe $ query $ pack $ addLink (getNode "User" contrib_name) (getRepoNode owner_name repo_name) "CONTRIBUTOR"
@@ -50,7 +44,6 @@ insertContributor (owner_name, repo_name) contrib_name = do
 
 insertWatcher :: (String, String) -> String -> IO()
 insertWatcher (owner_name, repo_name) watcher_name = do
-    logMsg ["Adding Watcher: ", watcher_name, "\n"]
     pipe <- connect config
     result <- run pipe $ query $ pack $ "MERGE (a:" ++ (getNode "User" watcher_name) ++ ")"
     result <- run pipe $ query $ pack $ addLink (getNode "User" watcher_name) (getRepoNode owner_name repo_name) "WATCHER"
@@ -64,10 +57,6 @@ getNode node_type name = node_type ++ " {name: '" ++ name ++ "'}"
 
 addLink :: String -> String -> String -> String
 addLink a b link = "MATCH (a:" ++ a ++ ") MATCH (b:" ++ b ++ ") MERGE (a)-[l:" ++ link ++ "]->(b)"
-
--- Utility Functions
-logMsg :: [String] -> IO()
-logMsg = mapM_ putStr
 
 getCompanyDb :: String -> String
 getCompanyDb name = "Org {name: '" ++ name ++ "'}"
