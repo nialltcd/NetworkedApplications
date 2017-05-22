@@ -48,6 +48,14 @@ insertContributor (owner_name, repo_name) contrib_name = do
     result <- run pipe $ query $ pack $ addLink (getNode "User" contrib_name) (getRepoNode owner_name repo_name) "CONTRIBUTOR"
     close pipe
 
+insertWatcher :: (String, String) -> String -> IO()
+insertWatcher (owner_name, repo_name) watcher_name = do
+    logMsg ["Adding Watcher: ", watcher_name, "\n"]
+    pipe <- connect config
+    result <- run pipe $ query $ pack $ "MERGE (a:" ++ (getNode "User" watcher_name) ++ ")"
+    result <- run pipe $ query $ pack $ addLink (getNode "User" watcher_name) (getRepoNode owner_name repo_name) "WATCHER"
+    close pipe
+
 getRepoNode :: String -> String -> String
 getRepoNode owner name = "Repo {owner: '" ++ owner ++ "', name: '" ++ name ++ "'}"
 
