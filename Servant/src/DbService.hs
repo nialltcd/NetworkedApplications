@@ -40,6 +40,14 @@ insertRepo node_type (owner_name, repo_name) = do
     result <- run pipe $ query $ pack $ addLink (getNode node_type owner_name) (getRepoNode owner_name repo_name) "OWNER"
     close pipe
 
+insertContributor :: (String, String) -> String -> IO()
+insertContributor (owner_name, repo_name) contrib_name = do
+    logMsg ["Adding Contributor: ", contrib_name, "\n"]
+    pipe <- connect config
+    result <- run pipe $ query $ pack $ "MERGE (a:" ++ (getNode "User" contrib_name) ++ ")"
+    result <- run pipe $ query $ pack $ addLink (getNode "User" contrib_name) (getRepoNode owner_name repo_name) "CONTRIBUTOR"
+    close pipe
+
 getRepoNode :: String -> String -> String
 getRepoNode owner name = "Repo {owner: '" ++ owner ++ "', name: '" ++ name ++ "'}"
 

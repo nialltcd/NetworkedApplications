@@ -6,44 +6,55 @@
 module GithubService where
 
 import Data.Text
+import Data.Vector
 import Data.String
-import Data.Aeson
-import Data.Aeson.TH
-import Network.Wai
-import Network.Wai.Handler.Warp
-import Servant
-import Control.Monad.Trans.Except
-import Control.Monad.IO.Class (liftIO)
 import GitHub
 import GitHub.Auth
-import Data.Vector
-import GitHub.Data.Repos
-import GitHub.Data.Definitions
-import qualified GitHub.Endpoints.Repos as GitHubRepos hiding(query)
+import GitHub.Data
+import qualified Data.ByteString.Char8 as BS
 import qualified GitHub.Endpoints.Users as GitHubUsers
 import qualified GitHub.Endpoints.Repos as GitHubRepos
-import qualified GitHub.Endpoints.Users.Followers as GitHubFollowers
-import Database.Bolt
-import Data.Map
-import qualified Data.ByteString.Char8 as BS
+import qualified GitHub.Endpoints.Users.Followers as GitHubFollowersS
 import DbService
+
+
+formatContributor :: Contributor -> String
+formatContributor (KnownContributor contributions avatarUrl name url uid gravatar) = unpack $ untagName name
 
 crawlGithubForUserData :: Text -> String -> IO (Vector (String, String))
 crawlGithubForUserData user authentication = do
     let auth = Just $ GitHub.Auth.OAuth $ BS.pack $ authentication
-    repos <- getRepos user auth
+    repos <- crawlGithubForReposOfUser user auth
     result <- Data.Vector.mapM (insertRepo "User") repos
-    --result_two <- Data.Vector.mapM (crawlRepo auth) repos
+    result_two <- Data.Vector.mapM (crawlGithubForRepoContributors auth) repos
     return repos
 
-getRepos :: Text -> Maybe Auth -> IO (Vector (String, String))
-getRepos name auth = do
+crawlGithubForReposOfUser :: Text -> Maybe Auth -> IO (Vector (String, String))
+crawlGithubForReposOfUser name auth = do
     let owner = GitHub.mkOwnerName name
     request <- GitHubRepos.userRepos' auth owner RepoPublicityPublic
     result <- case request of
         Left e -> error $ show e
         Right res -> return res
     return $ Data.Vector.map formatRepo result
+
+crawlGithubForRepoContributors :: Maybe Auth -> (String, String) -> IO (Vector String)
+crawlGithubForRepoContributors auth (owner, repo) = do
+    logMsg ["Crawling repo: ", owner, "/", repo, "\n"]
+    contributors <- getRepoContributors (owner, repo) auth
+    result <- Data.Vector.mapM (insertContributor (owner, repo)) contributors
+    return contributors
+
+getRepoContributors :: (String, String) -> Maybe Auth -> IO (Vector String)
+getRepoContributors (owner, repo) auth = do
+    let github_owner = GitHub.mkOwnerName $ fromString owner
+    let github_repo = GitHub.mkRepoName $ fromString repo
+    request <- GitHubRepos.contributors' auth github_owner github_repo
+    result <- case request of
+        Left e -> error $ show e
+        Right res -> return res
+    return $ Data.Vector.map formatContributor (Data.Vector.take 25 result)
+
 
 formatRepo :: Repo -> (String, String)
 formatRepo repo = do

@@ -7,6 +7,7 @@ module Lib
     ( startApp
     , app
     ) where
+
 import DbService
 import Data.Text
 import Data.String
